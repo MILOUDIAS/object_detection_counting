@@ -1,0 +1,56 @@
+<!-- <!DOCTYPE html> -->
+
+<html>
+  <head>
+    <title>PFE</title>
+  </head>
+  <body>
+<style>
+  .image {
+    width: 100px;
+    height: 200px;
+  }
+table {
+
+  font-family: arial, sans-serif;
+
+  border-collapse: collapse;
+
+  width: 100%;
+
+}
+
+td, th {
+
+  border: 1px solid #dddddd;
+
+  text-align: left;
+
+  padding: 8px;
+
+}
+
+tr:nth-child(even) {
+
+  background-color: #dddddd;
+
+}
+</style>
+  <h1>PFE Instrumentation 2023</h1>
+    <table>
+      <thead>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+              <td>{{ row[0] }}</td>
+              <td>{{ row[1] }}</td>
+              <td>{{ row[2] }}</td>
+              <td>{{ row[3] }}</td>
+              <td><img src="{{ url_for('static', filename=row[4]).lstrip('/') }}" class="image"></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
