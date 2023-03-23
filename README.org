@@ -1,3 +1,5 @@
 * The Project of my thesis
 The Project is about object detection, tracking and counting with tensorflow lite for a raspberry pi,
 and the data of detection, tracking and counting is shown on a webpage using the Flask library
+* Deployment
+To run the program just run the python script "object_detection_counting_web.py"
