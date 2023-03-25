@@ -4,6 +4,7 @@ import os
 import cv2
 import numpy as np
 import time
+from datetime import datetime
 from centroidtracker import CentroidTracker
 from flask import Flask, render_template
 import multiprocessing as mp
@@ -16,13 +17,18 @@ conn = sqlite3.connect('data.db')
 cur = conn.cursor()
 
 # # Create a table
+# cur.execute('''CREATE TABLE IF NOT EXISTS data_table (
+#                ID INTEGER PRIMARY KEY,
+#                Left INTEGER,
+#                Right INTEGER,
+#                Time TEXT,
+#                Person TEXT);''')
+
 cur.execute('''CREATE TABLE IF NOT EXISTS data_table (
                ID INTEGER PRIMARY KEY,
-               Left INTEGER,
-               Right INTEGER,
+               Date TEXT,
                Time TEXT,
                Person TEXT);''')
-
 app = Flask(__name__, static_folder='/')
 
 def get_db():
@@ -232,7 +238,7 @@ def main():
                     is_captured = True
             if bool(d):
                 print(d, time.ctime()) # prints the direction of travel (if any) and timestamp
-                cur.execute("INSERT OR IGNORE INTO data_table (ID, Left, Right, Time, Person) VALUES (?, ?, ?, ?, ?)", (curr_ID, leftcount, rightcount, time.ctime(), saved_image_path))
+                cur.execute("INSERT OR IGNORE INTO data_table (ID, Date, Time, Person) VALUES (?, ?, ?, ?)", (curr_ID, datetime.now().date(), datetime.now().strftime("%H:%M:%S"), saved_image_path))
                 conn.commit()
         
         # Press 'q' to quit and give the total tally
