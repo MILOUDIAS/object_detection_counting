@@ -1,0 +1,57 @@
+<!-- <!DOCTYPE html> -->
+
+<html>
+  <head>
+    <title>PFE</title>
+  </head>
+  <body>
+<style>
+  .image {
+    width: 50px;
+    height: 100px;
+  }
+table {
+  border-collapse: collapse;
+  width: 80%;
+  font-family: Gill Sans Extrabold, sans-serif;
+  margin-left: 10%;
+  margin-top: 10%;
+  <!-- border: 1px solid black; -->
+}
+
+th, td {
+  text-align: left;
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+tr:nth-child(even){background-color: #fAfAfA}
+
+th {
+  background-color: #0A0CCB;
+  color: white;
+}
+</style>
+  <div align="center"><h1>PFE Instrumentation 2023</h1></div>
+  <div align="center"><img src="{{ url_for('video_feed') }}"></div>
+
+    <table>
+<tr>
+<th width=70> <div align="center">ID</div></th>
+<th width=80> <div align="center">DATE</div></th>
+<th width=80> <div align="center">TIME</div></th>
+<th width=80> <div align="center">PERSON</div></th>
+</tr>
+      <tbody>
+        {% for row in rows %}
+    <tr>
+        <td><div align="center">{{ row[0] }}</div></td>
+        <td><div align="center">{{ row[1] }}</div></td>
+        <td><div align="center">{{ row[2] }}</div></td>
+        <td><div align="center"><img src="{{ url_for('static', filename=row[3]).lstrip('/') }}" class="image"></div></td>
+    </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
