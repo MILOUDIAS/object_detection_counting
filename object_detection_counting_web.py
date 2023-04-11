@@ -29,6 +29,7 @@ cur.execute('''CREATE TABLE IF NOT EXISTS data_table (
                Date TEXT,
                Time TEXT,
                Person TEXT);''')
+
 app = Flask(__name__, static_folder='/')
 
 def get_db():
@@ -44,7 +45,6 @@ def index():
     # cur2.execute('BEGIN')
     cur2.execute('SELECT * FROM data_table')
 
-    # Read data from the table into a Pandas DataFrame
     rows = cur2.fetchall()
     conn2.close()
     return render_template('index.html', rows=rows)
@@ -121,6 +121,7 @@ def main():
     ret = cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
     ret = cap.set(3,imW)
     ret = cap.set(4,imH)
+
 
     captured_image = False
     while True:
