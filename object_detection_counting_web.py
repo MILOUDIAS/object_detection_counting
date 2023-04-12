@@ -6,7 +6,7 @@ import numpy as np
 import time
 from datetime import datetime
 from centroidtracker import CentroidTracker
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request
 import multiprocessing as mp
 import sqlite3
 import common2 as cm
@@ -31,7 +31,7 @@ def get_db():
     conn2.row_factory = sqlite3.Row
     return conn2
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def index():
     conn2 = get_db()
     cur2 = conn2.cursor()
@@ -40,7 +40,18 @@ def index():
 
     rows = cur2.fetchall()
     conn2.close()
-    return render_template('index2.html', rows=rows)
+
+    show_table = False
+    if request.method == 'POST':
+        if request.form['submit_button'] == 'Show Table':
+            # Handle button click here
+            show_table = True
+
+        if request.form['submit_button'] == 'Close Table':
+            # Handle button click here
+            show_table = False
+    
+    return render_template('index2.html', rows=rows, show_table=show_table)
 
 @app.route('/video_feed')
 def video_feed():

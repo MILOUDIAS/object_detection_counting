@@ -38,10 +38,34 @@ th {
   background-color: lightblue;
   border-radius: 10px;
 }
+.center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+  }
+
+input[type=submit] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+        background-color: #45a049;
+    }
 </style>
   <div align="center"><h1 class="box">PFE Instrumentation 2023</h1></div>
   <div align="center"><img src="{{ url_for('video_feed') }}"></div>
-
+<div class="center">
+    <form method="post">
+    <input type="submit" name="submit_button" value="Show Table">
+    <input type="submit" name="submit_button" value="Close Table">
+    </form>
+</div>
+{% if show_table %}
     <table>
 <tr>
 <th width=70> <div align="center">ID</div></th>
@@ -60,5 +84,6 @@ th {
         {% endfor %}
       </tbody>
     </table>
+{% endif %}
   </body>
 </html>
