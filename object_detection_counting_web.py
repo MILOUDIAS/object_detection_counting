@@ -41,7 +41,7 @@ def index():
     rows = cur2.fetchall()
     conn2.close()
 
-    show_table = False
+    show_table = True
     if request.method == 'POST':
         if request.form['submit_button'] == 'Show Table':
             # Handle button click here
