@@ -7,9 +7,10 @@
   <body>
 <style>
   .image {
-    width: 50px;
+    width: 80px;
     height: 100px;
   }
+
 table {
   border-collapse: collapse;
   width: 80%;
@@ -17,6 +18,13 @@ table {
   margin-left: 10%;
   margin-top: 10%;
   <!-- border: 1px solid black; -->
+}
+
+@media screen and (min-width: 768px) {
+  table {
+    width: 80%;
+    margin: 10% auto;
+  }
 }
 
 th, td {
@@ -38,6 +46,15 @@ th {
   background-color: lightblue;
   border-radius: 10px;
 }
+
+.box2 {
+  display: inline-block;
+  border: 2px solid black;
+  padding: 15px;
+  border-style: dashed;
+  background-color: orange;
+  border-radius: 5px;
+}
 .center {
         display: flex;
         justify-content: center;
@@ -58,6 +75,7 @@ input[type=submit] {
     }
 </style>
   <div align="center"><h1 class="box">PFE Instrumentation 2023</h1></div>
+  <div align="center"><h2 class="box2">Prototype par: Miloudi Adel Hani</h2></div>
   <div align="center"><img src="{{ url_for('video_feed') }}"></div>
 <div class="center">
     <form method="post">
@@ -66,12 +84,17 @@ input[type=submit] {
     </form>
 </div>
 {% if show_table %}
+<div class="center">
+  <form>
+    <input type="text" id="searchInput" placeholder="Search the table...">
+  </form>
+</div>
     <table>
 <tr>
-<th width=70> <div align="center">ID</div></th>
-<th width=80> <div align="center">DATE</div></th>
-<th width=80> <div align="center">TIME</div></th>
-<th width=80> <div align="center">PERSON</div></th>
+<th width=20> <div align="center">ID</div></th>
+<th width=40> <div align="center">DATE</div></th>
+<th width=40> <div align="center">TIME</div></th>
+<th width=40> <div align="center">PERSON</div></th>
 </tr>
       <tbody>
         {% for row in rows %}
@@ -85,5 +108,21 @@ input[type=submit] {
       </tbody>
     </table>
 {% endif %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('#searchInput').keyup(function() {
+      var searchText = $(this).val().toLowerCase();
+      $('table tbody tr').each(function() {
+        var rowText = $(this).text().toLowerCase();
+        if (rowText.indexOf(searchText) === -1) {
+          $(this).hide();
+        } else {
+          $(this).show();
+        }
+      });
+    });
+  });
+</script>
   </body>
 </html>

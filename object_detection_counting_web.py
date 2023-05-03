@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from centroidtracker import CentroidTracker
 from flask import Flask, render_template, Response, request
-import multiprocessing as mp
+# import multiprocessing as mp
 import sqlite3
 import common2 as cm
 from PIL import Image
@@ -41,7 +41,7 @@ def index():
     rows = cur2.fetchall()
     conn2.close()
 
-    show_table = True
+    show_table = False
     if request.method == 'POST':
         if request.form['submit_button'] == 'Show Table':
             # Handle button click here
@@ -301,10 +301,11 @@ def main():
                 cv2_im = cv2.circle(frame1, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
 
         # Draw framerate in corner of frame
-        cv2_im = cv2.putText(frame1,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-        cv2_im = cv2.putText(frame1,'Right: {0}'.format(rightcount),(30,80),cv2.FONT_HERSHEY_SIMPLEX,1,(255,100,0),2,cv2.LINE_AA)
-        cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(30,120),cv2.FONT_HERSHEY_SIMPLEX,1,(255,120,60),2,cv2.LINE_AA)
+        # cv2_im = cv2.putText(frame1,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        cv2_im = cv2.putText(frame1,'Right: {0}'.format(rightcount),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
+        cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
 
+        cv2_im = cv2.putText(frame1, '{0} - {1}'.format(datetime.now().date(), datetime.now().strftime("%H:%M:%S")),(200,470),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         # All the results have been drawn on the frame, so it's time to display it.
         # cv2.imshow('Object detector', frame)
 
