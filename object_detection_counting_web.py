@@ -50,7 +50,7 @@ def index():
         if request.form['submit_button'] == 'Close Table':
             # Handle button click here
             show_table = False
-    
+
     return render_template('index2.html', rows=rows, show_table=show_table)
 
 @app.route('/video_feed')
@@ -221,20 +221,18 @@ def main():
         hasFrame, frame1 = cap.read()
 
         # Acquire frame and resize to input shape expected by model [1xHxWx3]
-        # frame = frame1.copy()
+        frame = frame1.copy()
 
         cv2_im = frame1
-        # cv2_im = cv2.flip(cv2_im, 0)
-        # cv2_im = cv2.flip(cv2_im, 1)
 
         cv2_im_rgb = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         pil_im = Image.fromarray(cv2_im_rgb)
 
 
         # recolor the image (reopenCV uses BGR instead of RGB)
-        # frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # frame_resized = cv2.resize(frame_rgb, (width, height))
-        # input_data = np.expand_dims(frame_resized, axis=0)
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_resized = cv2.resize(frame_rgb, (width, height))
+        input_data = np.expand_dims(frame_resized, axis=0)
         cm.set_input(interpreter, pil_im)
 
         # Perform the actual detection by running the model with the image as input
@@ -307,7 +305,7 @@ def main():
 
         cv2_im = cv2.putText(frame1, '{0} - {1}'.format(datetime.now().date(), datetime.now().strftime("%H:%M:%S")),(200,470),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         # All the results have been drawn on the frame, so it's time to display it.
-        # cv2.imshow('Object detector', frame)
+        cv2.imshow('Object detector', cv2_im)
 
         # Calculate framerate
         t2 = cv2.getTickCount()
