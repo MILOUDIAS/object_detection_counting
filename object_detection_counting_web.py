@@ -195,7 +195,13 @@ def main():
     # ret = cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
     # ret = cap.set(3,imW)
     # ret = cap.set(4,imH)
+    
+    # Create a new window
+    window_name = "Person Detector"
+    cv2.namedWindow(window_name)
 
+    # Set the window's property to full screen
+    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     captured_image = False
     while True:
@@ -295,7 +301,7 @@ def main():
 
         cv2_im = cv2.putText(frame1, '{0} - {1}'.format(datetime.now().date(), datetime.now().strftime("%H:%M:%S")),(200,470),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow('Object detector', cv2_im)
+        cv2.imshow(window_name, cv2_im)
 
         # Calculate framerate
         t2 = cv2.getTickCount()
