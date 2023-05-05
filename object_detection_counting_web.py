@@ -7,10 +7,9 @@ import time
 from datetime import datetime
 from centroidtracker import CentroidTracker
 from flask import Flask, render_template, Response, request
-import multiprocessing as mp
 import threading
 import sqlite3
-import common2 as cm
+import utils as cm
 from PIL import Image
 
 # Connect to the database

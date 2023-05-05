@@ -64,22 +64,12 @@ th {
         align-items: center;
   }
 
-input[type=submit] {
-        background-color: #4CAF50;
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    input[type=submit]:hover {
-        background-color: #45a049;
-    }
 </style>
   <div align="center"><h1 class="box">PFE Instrumentation 2023</h1></div>
   <div align="center"><h2 class="box2">Prototype par: Miloudi Adel Hani</h2></div>
   <div align="center"><img src="{{ url_for('video_feed') }}"></div>
+<div class="center">
+</div>
     <div id="table-div">
     <table >
 <tr>
@@ -102,18 +92,19 @@ input[type=submit] {
   </div>
 <script src="templates/jquery.js"></script>
 <script>
- function reloadTable() {
+    function reloadTable() {
           // Use jQuery to reload the table contents
           $('#table-div').load(location.href + ' #table-div');
 
-          // Set a timeout to call this function again after 10 seconds
-          setTimeout(reloadTable, 5000);
+          // Set a timeout to call this function again after 3 seconds
+          setTimeout(reloadTable, 3000);
         }
 
         // Call the function on page load
         $(document).ready(function() {
           reloadTable();
         });
+
 </script>
   </body>
 </html>
