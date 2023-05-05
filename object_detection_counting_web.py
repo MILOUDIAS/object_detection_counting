@@ -357,7 +357,7 @@ def main():
 
 def run_server():
 
-    app.run(host='0.0.0.0', port=8080, threaded=False, debug=False) # Run FLASK
+    app.run(host='0.0.0.0', port=8080, threaded=True, debug=False) # Run FLASK
 
 if __name__ == '__main__':
 # creating processes
