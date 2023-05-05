@@ -42,17 +42,6 @@ def index():
     rows = cur2.fetchall()
     conn2.close()
 
-    # # show_table = False
-    # show_table = True
-    # if request.method == 'POST':
-    #     if request.form['submit_button'] == 'Show Table':
-    #         # Handle button click here
-    #         show_table = True
-    #
-    #     if request.form['submit_button'] == 'Close Table':
-    #         # Handle button click here
-    #         show_table = False
-
     return render_template('index2.html', rows=rows)
 
 @app.route('/video_feed')
@@ -297,11 +286,11 @@ def main():
 
                 curr_ID = objectID
 
-                cv2_im = cv2.putText(frame1, textID, (centroid[0] - 2, centroid[1] - 2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                cv2_im = cv2.circle(frame1, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
+                cv2.putText(frame1, textID, (centroid[0] - 2, centroid[1] - 2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.circle(frame1, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
 
         # Draw framerate in corner of frame
-        # cv2_im = cv2.putText(frame1,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        # cv2_im = cv2.putText(frame1,'FPS: {0:.2f}'.format(frame_rate_calc),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1,'Right: {0}'.format(rightcount),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
 
@@ -360,20 +349,14 @@ def run_server():
     app.run(host='0.0.0.0', port=8080, threaded=True, debug=False) # Run FLASK
 
 if __name__ == '__main__':
-# creating processes
-    p1 = mp.Process(target=run_server)
-    p2 = mp.Process(target=main)
 
     server_thread = threading.Thread(target=run_server)
     app_thread = threading.Thread(target=main)
-    # starting process 1
+    
     server_thread.start()
-    # starting process 2
     app_thread.start()
 
-    # wait until process 1 is finished
+    # wait until thread 1 is finished
     server_thread.join()
-    # wait until process 2 is finished
+    # wait until thread 2 is finished
     app_thread.join()
-    # app.run(host='0.0.0.0', port=8080, threaded=True, debug=False) # Run FLASK
-    # main()
