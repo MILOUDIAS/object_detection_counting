@@ -50,83 +50,6 @@ def video_feed():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-cap = cv2.VideoCapture("testing/output_v3.mp4")
-# initialize our centroid tracker and frame dimensions
-ct = CentroidTracker()
-objects ={}
-old_objects={}
-curr_ID = 0
-captured_image = np.array([])
-is_captured = False
-# frame_rate_calc = 0
-# leftcount = 0
-# rightcount = 0
-
-def show_streaming(frame, labels, boxes, classes, scores, min_conf_threshold):
-    global x, objects, old_objects, ct, is_captured, curr_ID, captured_image, frame_rate_calc, leftcount, rightcount
-    rects = []
-
-    # Loop over all detections and draw detection box if confidence is above minimum threshold
-
-    # Loop over all detections and draw detection box if confidence is above minimum threshold
-    for i in range(len(scores)):
-        if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
-
-            object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-            if object_name == 'person':
-
-                # Get bounding box coordinates and draw box
-                # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-                ymin = int(max(1,(boxes[i][0] * imH)))
-                xmin = int(max(1,(boxes[i][1] * imW)))
-                ymax = int(min(imH,(boxes[i][2] * imH)))
-                xmax = int(min(imW,(boxes[i][3] * imW)))
-                box = np.array([xmin,ymin,xmax,ymax])
-
-                rects.append(box.astype("int"))
-                frame = cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 2)
-                if is_captured:
-                    # Save the image
-                    roi = frame[ymin:ymin+ymax, xmin:xmin+xmax]
-
-                    saved_image_path =  'person_' + str(curr_ID) + '.png'
-                    captured_image = cv2.imwrite(saved_image_path, roi)
-
-                    print( "captured_image:{} ".format( saved_image_path ) )
-                    is_captured = False
-
-
-                # Draw label
-                label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
-                labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-                label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                frame = cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-                frame = cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-
-    #update the centroid for the objects
-    objects = ct.update(rects)
-    # calculate the difference between this and the previous frame
-    x = DictDiff(objects,old_objects)
-	# loop over the tracked objects
-    for (objectID, centroid) in objects.items():
-
-		# draw both the ID of the object and the centroid of the
-		# object on the output frame
-        textID = "ID {}".format(objectID)
-
-        curr_ID = objectID
-
-        frame = cv2.putText(frame, textID, (centroid[0] - 2, centroid[1] - 2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        frame = cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
-
-    # Draw framerate in corner of frame
-    frame = cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-    frame = cv2.putText(frame,'Right: {0}'.format(rightcount),(30,80),cv2.FONT_HERSHEY_SIMPLEX,1,(255,100,0),2,cv2.LINE_AA)
-    frame = cv2.putText(frame,'Left: {0}'.format(leftcount),(30,120),cv2.FONT_HERSHEY_SIMPLEX,1,(255,120,60),2,cv2.LINE_AA)
-
-    return frame
-
-
 
 
 # compare the co-ordinates for dictionaries of interest
@@ -163,12 +86,21 @@ PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
 # Path to label map file
 PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
-# labels = load_labels(PATH_TO_LABELS)
 
+# cap = cv2.VideoCapture("testing/output_v3.mp4")
+cap = cv2.VideoCapture(0)
+# initialize our centroid tracker and frame dimensions
+ct = CentroidTracker()
+objects ={}
+old_objects={}
+curr_ID = 0
+captured_image = np.array([])
+is_captured = False
 # Newly added co-ord stuff
 leftcount = 0
 rightcount = 0
 obsFrames = 0
+
 def main():
 
     global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames
@@ -201,7 +133,7 @@ def main():
     cv2.namedWindow(window_name)
 
     # Set the window's property to full screen
-    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     captured_image = False
     while True:
@@ -309,8 +241,6 @@ def main():
         frame_rate_calc= 1/time1
         #count number of frames for direction calculation
         obsFrames = obsFrames + 1
-
-        # cv2_im = show_streaming(cv2_im, labels, boxes, classes, scores, 0.6)
 
         #see what the difference in centroids is after every x frames to determine direction of movement
         #and tally up total number of objects that travelled left or right
