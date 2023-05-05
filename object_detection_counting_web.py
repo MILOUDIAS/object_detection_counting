@@ -7,7 +7,8 @@ import time
 from datetime import datetime
 from centroidtracker import CentroidTracker
 from flask import Flask, render_template, Response, request
-# import multiprocessing as mp
+import multiprocessing as mp
+import threading
 import sqlite3
 import common2 as cm
 from PIL import Image
@@ -31,7 +32,7 @@ def get_db():
     conn2.row_factory = sqlite3.Row
     return conn2
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/")
 def index():
     conn2 = get_db()
     cur2 = conn2.cursor()
@@ -41,17 +42,18 @@ def index():
     rows = cur2.fetchall()
     conn2.close()
 
-    show_table = False
-    if request.method == 'POST':
-        if request.form['submit_button'] == 'Show Table':
-            # Handle button click here
-            show_table = True
+    # # show_table = False
+    # show_table = True
+    # if request.method == 'POST':
+    #     if request.form['submit_button'] == 'Show Table':
+    #         # Handle button click here
+    #         show_table = True
+    #
+    #     if request.form['submit_button'] == 'Close Table':
+    #         # Handle button click here
+    #         show_table = False
 
-        if request.form['submit_button'] == 'Close Table':
-            # Handle button click here
-            show_table = False
-
-    return render_template('index2.html', rows=rows, show_table=show_table)
+    return render_template('index2.html', rows=rows)
 
 @app.route('/video_feed')
 def video_feed():
@@ -353,7 +355,25 @@ def main():
     cap.release()
     conn.close()
 
-if __name__ == '__main__':
+def run_server():
 
-    app.run(host='0.0.0.0', port=8080, threaded=True, debug=False) # Run FLASK
-    main()
+    app.run(host='0.0.0.0', port=8080, threaded=False, debug=False) # Run FLASK
+
+if __name__ == '__main__':
+# creating processes
+    p1 = mp.Process(target=run_server)
+    p2 = mp.Process(target=main)
+
+    server_thread = threading.Thread(target=run_server)
+    app_thread = threading.Thread(target=main)
+    # starting process 1
+    server_thread.start()
+    # starting process 2
+    app_thread.start()
+
+    # wait until process 1 is finished
+    server_thread.join()
+    # wait until process 2 is finished
+    app_thread.join()
+    # app.run(host='0.0.0.0', port=8080, threaded=True, debug=False) # Run FLASK
+    # main()

@@ -3,6 +3,9 @@
 <html>
   <head>
     <title>PFE</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
   </head>
   <body>
 <style>
@@ -77,19 +80,8 @@ input[type=submit] {
   <div align="center"><h1 class="box">PFE Instrumentation 2023</h1></div>
   <div align="center"><h2 class="box2">Prototype par: Miloudi Adel Hani</h2></div>
   <div align="center"><img src="{{ url_for('video_feed') }}"></div>
-<div class="center">
-    <form method="post">
-    <input type="submit" name="submit_button" value="Show Table">
-    <input type="submit" name="submit_button" value="Close Table">
-    </form>
-</div>
-{% if show_table %}
-<div class="center">
-  <form>
-    <input type="text" id="searchInput" placeholder="Search the table...">
-  </form>
-</div>
-    <table>
+    <div id="table-div">
+    <table >
 <tr>
 <th width=20> <div align="center">ID</div></th>
 <th width=40> <div align="center">DATE</div></th>
@@ -107,22 +99,21 @@ input[type=submit] {
         {% endfor %}
       </tbody>
     </table>
-{% endif %}
+  </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
-  $(document).ready(function() {
-    $('#searchInput').keyup(function() {
-      var searchText = $(this).val().toLowerCase();
-      $('table tbody tr').each(function() {
-        var rowText = $(this).text().toLowerCase();
-        if (rowText.indexOf(searchText) === -1) {
-          $(this).hide();
-        } else {
-          $(this).show();
+ function reloadTable() {
+          // Use jQuery to reload the table contents
+          $('#table-div').load(location.href + ' #table-div');
+
+          // Set a timeout to call this function again after 10 seconds
+          setTimeout(reloadTable, 5000);
         }
-      });
-    });
-  });
+
+        // Call the function on page load
+        $(document).ready(function() {
+          reloadTable();
+        });
 </script>
   </body>
 </html>
