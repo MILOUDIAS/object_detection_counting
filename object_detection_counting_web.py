@@ -49,9 +49,6 @@ def video_feed():
     return Response(main(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-
-
-
 # compare the co-ordinates for dictionaries of interest
 def DictDiff(dict1, dict2):
    dict3 = {**dict1}
@@ -60,12 +57,6 @@ def DictDiff(dict1, dict2):
                dict3[key] = np.subtract(dict2[key], dict1[key])
    return dict3
 
-import re
-def load_labels(path):
-    p = re.compile(r'\s*(\d+)(.+)')
-    with open(path, 'r', encoding='utf-8') as f:
-       lines = (p.match(line).groups() for line in f.readlines())
-       return {int(num): text.strip() for num, text in lines}
 
 # MODEL_NAME = args.modeldir
 MODEL_NAME = "all_models/"
