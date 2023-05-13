@@ -74,8 +74,8 @@ PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
 PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
 
-cap = cv2.VideoCapture("testing/output_v3.mp4")
-# cap = cv2.VideoCapture("testing/test4.mp4")
+# cap = cv2.VideoCapture("testing/output_v3.mp4")
+cap = cv2.VideoCapture("testing/output3.mp4")
 # cap = cv2.VideoCapture(0)
 # initialize our centroid tracker and frame dimensions
 ct = CentroidTracker()
@@ -208,7 +208,7 @@ def main():
 
         #see what the difference in centroids is after every x frames to determine direction of movement
         #and tally up total number of objects that travelled left or right
-        if obsFrames % 50 == 0:
+        if obsFrames % 45 == 0:
             d = {}
             for k,v in x.items():
                 if v[0] > 3: 
@@ -236,9 +236,12 @@ def main():
         # if is_Right == True:
         #     rightcount = rightcount + 1
         #     is_Right = False
+        # Get the size of the screen
 
+        # Resize the video to the size of the screen
+        resized_video = cv2.resize(cv2_im, (900, 480))
         # Set the window's property to full screen
-        # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         # All the results have been drawn on the frame, so it's time to display it.
         cv2.imshow(window_name, cv2_im)
         
