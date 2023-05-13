@@ -33,6 +33,17 @@ def load_labels(path):
        lines = (p.match(line).groups() for line in f.readlines())
        return {int(num): text.strip() for num, text in lines}
 
+
+def load_labels2(path):
+
+  with open(path, 'r') as f:
+    labels = f.readlines()
+
+  labels = [label.strip() for label in labels]
+
+  return labels
+
+
 import os
 def load_model(model_dir,model, lbl):
     
@@ -43,8 +54,7 @@ def load_model(model_dir,model, lbl):
     model_path=os.path.join(model_dir,model)
     labels_path=os.path.join(model_dir,lbl)
     
-    
-    interpreter = make_interpreter(model_path)
+    interpreter = tflite.Interpreter(model_path)
     
     interpreter.allocate_tensors()
     

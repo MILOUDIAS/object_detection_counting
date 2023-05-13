@@ -6,7 +6,7 @@ import numpy as np
 import time
 from datetime import datetime
 from centroidtracker import CentroidTracker
-from flask import Flask, render_template, Response, request
+from flask import Flask, render_template, Response
 import threading
 import sqlite3
 import utils as cm
@@ -58,14 +58,10 @@ def DictDiff(dict1, dict2):
    return dict3
 
 
-# MODEL_NAME = args.modeldir
 MODEL_NAME = "all_models/"
-# GRAPH_NAME = args.graph
 GRAPH_NAME = "mobilenet_ssd_v2_coco_quant_postprocess.tflite"
-#LABELMAP_NAME = args.labels
 LABELMAP_NAME = "coco_labels.txt"
-# min_conf_threshold = float(args.threshold)
-min_conf_threshold = 0.4
+min_conf_threshold = 0.7
 imW, imH = 800, 480
 
 # Get path to current working directory
@@ -78,8 +74,9 @@ PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
 PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
 
-# cap = cv2.VideoCapture("testing/output_v3.mp4")
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture("testing/output_v3.mp4")
+# cap = cv2.VideoCapture("testing/test4.mp4")
+# cap = cv2.VideoCapture(0)
 # initialize our centroid tracker and frame dimensions
 ct = CentroidTracker()
 objects ={}
@@ -87,6 +84,10 @@ old_objects={}
 curr_ID = 0
 captured_image = np.array([])
 is_captured = False
+
+# is_Left = False
+# is_Right = False
+
 # Newly added co-ord stuff
 leftcount = 0
 rightcount = 0
@@ -94,31 +95,15 @@ obsFrames = 0
 
 def main():
 
-    global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames
+    global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames, is_Left, is_Right
 
     interpreter, labels =cm.load_model(MODEL_NAME,PATH_TO_CKPT,PATH_TO_LABELS)
-
-    # Load the Tensorflow Lite model.
-    # interpreter = Interpreter(model_path=PATH_TO_CKPT)
-
-    # interpreter.allocate_tensors()
 
     # Get model details
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-    height = input_details[0]['shape'][1]
-    width = input_details[0]['shape'][2]
 
-    # Initialize frame rate calculation
-    frame_rate_calc = 1
-    freq = cv2.getTickFrequency()
 
-    # cap = cv2.VideoCapture("testing/output_v3.mp4")
-    # cap = cv2.VideoCapture(0)
-    # ret = cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-    # ret = cap.set(3,imW)
-    # ret = cap.set(4,imH)
-    
     # Create a new window
     window_name = "Person Detector"
     cv2.namedWindow(window_name)
@@ -127,35 +112,23 @@ def main():
     # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     captured_image = False
+
     while True:
    
-        saved_image_path = 'person_' + str(curr_ID) + '.png'
-        # Start timer (for calculating frame rate)
-        t1 = cv2.getTickCount()
-
         # On the next loop set the value of these objects as old for comparison
         old_objects.update(objects)
 
         # Grab frame from camera
-        hasFrame, frame1 = cap.read()
-
-        # Acquire frame and resize to input shape expected by model [1xHxWx3]
-        frame = frame1.copy()
+        _, frame1 = cap.read()
 
         cv2_im = frame1
 
         cv2_im_rgb = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         pil_im = Image.fromarray(cv2_im_rgb)
 
-
-        # recolor the image (reopenCV uses BGR instead of RGB)
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame_resized = cv2.resize(frame_rgb, (width, height))
-        input_data = np.expand_dims(frame_resized, axis=0)
         cm.set_input(interpreter, pil_im)
 
         # Perform the actual detection by running the model with the image as input
-        # interpreter.set_tensor(input_details[0]['index'],input_data)
         interpreter.invoke()
 
         # Retrieve detection results
@@ -163,6 +136,8 @@ def main():
         classes = interpreter.get_tensor(output_details[1]['index'])[0] # Class index of detected objects
         scores = interpreter.get_tensor(output_details[2]['index'])[0] # Confidence of detected objects
 
+        saved_image_path = 'person_' + str(curr_ID) + '.png'
+        
         #rects variable
         rects =[]
 
@@ -223,29 +198,29 @@ def main():
         cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
 
         cv2_im = cv2.putText(frame1, '{0} - {1}'.format(datetime.now().date(), datetime.now().strftime("%H:%M:%S")),(200,470),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-        # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow(window_name, cv2_im)
 
         # Calculate framerate
-        t2 = cv2.getTickCount()
-        time1 = (t2-t1)/freq
-        frame_rate_calc= 1/time1
+        # t2 = cv2.getTickCount()
+        # time1 = (t2-t1)/freq
+        # frame_rate_calc= 1/time1
         #count number of frames for direction calculation
         obsFrames = obsFrames + 1
 
         #see what the difference in centroids is after every x frames to determine direction of movement
         #and tally up total number of objects that travelled left or right
-        if obsFrames % 30 == 0:
+        if obsFrames % 50 == 0:
             d = {}
             for k,v in x.items():
                 if v[0] > 3: 
                     d[k] =  "Left"
                     leftcount = leftcount + 1
+                    # is_Left = True
                     is_captured = True
                 elif v[0]< -3:
                     d[k] =  "Right"
                     rightcount = rightcount + 1
                     is_captured = True
+                    # is_Right = True
                 else: 
                     d[k] = "Stationary"
                     is_captured = True
@@ -253,6 +228,19 @@ def main():
                 print(d, time.ctime()) # prints the direction of travel (if any) and timestamp
                 cur.execute("INSERT OR IGNORE INTO data_table (ID, Date, Time, Person) VALUES (?, ?, ?, ?)", (curr_ID, datetime.now().date(), datetime.now().strftime("%H:%M:%S"), saved_image_path))
                 conn.commit()
+       
+        # if is_Left == True:
+        #     leftcount = leftcount + 1
+        #     is_Left = False
+        #
+        # if is_Right == True:
+        #     rightcount = rightcount + 1
+        #     is_Right = False
+
+        # Set the window's property to full screen
+        # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        # All the results have been drawn on the frame, so it's time to display it.
+        cv2.imshow(window_name, cv2_im)
         
         # Press 'q' to quit and give the total tally
         if cv2.waitKey(1) == ord('q'):
