@@ -86,9 +86,6 @@ curr_ID = 0
 captured_image = np.array([])
 is_captured = False
 
-# is_Left = False
-# is_Right = False
-
 # Newly added co-ord stuff
 leftcount = 0
 rightcount = 0
@@ -102,6 +99,12 @@ def main():
 
     interpreter, labels =cm.load_model(MODEL_NAME,PATH_TO_CKPT,PATH_TO_LABELS)
 
+    roi_pos1 = 0.2
+    roi_pos2 = 0.25
+
+    is_Left = False
+    is_Right = False
+
     # Get model details
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
@@ -109,7 +112,7 @@ def main():
 
     # Create a new window
     window_name = "Person Detector"
-    cv2.namedWindow(window_name)
+    # cv2.namedWindow(window_name)
 
     # Set the window's property to full screen
     # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
@@ -169,8 +172,10 @@ def main():
                         captured_image = cv2.imwrite(saved_image_path, roi)
 
                         print( "captured_image:{} ".format( saved_image_path ) )
-                        is_captured = False
 
+                        cur.execute("INSERT OR IGNORE INTO data_table (ID, Date, Time, Person) VALUES (?, ?, ?, ?)", (curr_ID, datetime.now().date(), datetime.now().strftime("%H:%M:%S"), saved_image_path))
+                        conn.commit()
+                        is_captured = False
 
                     # Draw label
                     label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
@@ -186,6 +191,13 @@ def main():
 	        # loop over the tracked objects
             for (objectID, centroid) in objects.items():
 
+                if is_Left and centroid[0] < roi_pos1*imW:
+                        leftcount += 1
+                        is_Left = False
+
+                if is_Right and centroid[0] > roi_pos1*imW and centroid[0] < roi_pos2*imW:
+                        rightcount += 1
+                        is_Right = False
 		        # draw both the ID of the object and the centroid of the
 		        # object on the output frame
                 textID = "ID {}".format(objectID)
@@ -214,21 +226,21 @@ def main():
             for k,v in x.items():
                 if v[0] > 3: 
                     d[k] =  "Left"
-                    leftcount = leftcount + 1
-                    # is_Left = True
+                    # leftcount = leftcount + 1
+                    is_Left = True
                     is_captured = True
                 elif v[0] < -3:
                     d[k] =  "Right"
-                    rightcount = rightcount + 1
+                    # rightcount = rightcount + 1
                     is_captured = True
-                    # is_Right = True
+                    is_Right = True
                 else: 
                     d[k] = "Stationary"
                     is_captured = True
             if bool(d):
                 print(d, time.ctime()) # prints the direction of travel (if any) and timestamp
-                cur.execute("INSERT OR IGNORE INTO data_table (ID, Date, Time, Person) VALUES (?, ?, ?, ?)", (curr_ID, datetime.now().date(), datetime.now().strftime("%H:%M:%S"), saved_image_path))
-                conn.commit()
+                # cur.execute("INSERT OR IGNORE INTO data_table (ID, Date, Time, Person) VALUES (?, ?, ?, ?)", (curr_ID, datetime.now().date(), datetime.now().strftime("%H:%M:%S"), saved_image_path))
+                # conn.commit()
        
         # if is_Left == True:
         #     leftcount = leftcount + 1
@@ -244,7 +256,7 @@ def main():
         # Set the window's property to full screen
         # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow(window_name, cv2_im)
+        # cv2.imshow(window_name, cv2_im)
         
         # Press 'q' to quit and give the total tally
         if cv2.waitKey(1) == ord('q'):
