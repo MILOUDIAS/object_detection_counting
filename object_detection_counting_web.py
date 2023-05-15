@@ -61,7 +61,7 @@ def DictDiff(dict1, dict2):
 MODEL_NAME = "all_models/"
 GRAPH_NAME = "mobilenet_ssd_v2_coco_quant_postprocess.tflite"
 LABELMAP_NAME = "coco_labels.txt"
-min_conf_threshold = 0.7
+min_conf_threshold = 0.5
 imW, imH = 800, 480
 
 # Get path to current working directory
@@ -74,8 +74,9 @@ PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
 PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
 
-# cap = cv2.VideoCapture("testing/output_v3.mp4")
-cap = cv2.VideoCapture("testing/output3.mp4")
+cap = cv2.VideoCapture("testing/output_v5.mp4")
+# cap = cv2.VideoCapture("testing/output3.mp4")
+# cap = cv2.VideoCapture("testing/recording_test_2.mp4")
 # cap = cv2.VideoCapture(0)
 # initialize our centroid tracker and frame dimensions
 ct = CentroidTracker()
@@ -92,10 +93,12 @@ is_captured = False
 leftcount = 0
 rightcount = 0
 obsFrames = 0
+skipFrames1 = 35  # for output_v3.mp4 and set pixels to 6
+skipFrames2 = 50  # for output3.mp4  and set pixels to 3
 
 def main():
 
-    global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames, is_Left, is_Right
+    global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames, skipFrames1, skipFrames2
 
     interpreter, labels =cm.load_model(MODEL_NAME,PATH_TO_CKPT,PATH_TO_LABELS)
 
@@ -192,11 +195,9 @@ def main():
                 cv2.putText(frame1, textID, (centroid[0] - 2, centroid[1] - 2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 cv2.circle(frame1, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
 
-        # Draw framerate in corner of frame
-        # cv2_im = cv2.putText(frame1,'FPS: {0:.2f}'.format(frame_rate_calc),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1,'Right: {0}'.format(rightcount),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
-
+        cv2_im = cv2.putText(frame1,'Detected: {0}'.format(len(objects)),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(170,110,150),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1, '{0} - {1}'.format(datetime.now().date(), datetime.now().strftime("%H:%M:%S")),(200,470),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
         # Calculate framerate
@@ -205,10 +206,10 @@ def main():
         # frame_rate_calc= 1/time1
         #count number of frames for direction calculation
         obsFrames = obsFrames + 1
-
+        
         #see what the difference in centroids is after every x frames to determine direction of movement
         #and tally up total number of objects that travelled left or right
-        if obsFrames % 45 == 0:
+        if obsFrames % 40 == 0:
             d = {}
             for k,v in x.items():
                 if v[0] > 3: 
@@ -216,7 +217,7 @@ def main():
                     leftcount = leftcount + 1
                     # is_Left = True
                     is_captured = True
-                elif v[0]< -3:
+                elif v[0] < -3:
                     d[k] =  "Right"
                     rightcount = rightcount + 1
                     is_captured = True
@@ -239,9 +240,9 @@ def main():
         # Get the size of the screen
 
         # Resize the video to the size of the screen
-        resized_video = cv2.resize(cv2_im, (900, 480))
+        # resized_video = cv2.resize(cv2_im, (800, 480))
         # Set the window's property to full screen
-        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         # All the results have been drawn on the frame, so it's time to display it.
         cv2.imshow(window_name, cv2_im)
         
