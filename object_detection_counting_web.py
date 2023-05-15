@@ -12,6 +12,7 @@ import sqlite3
 import utils as cm
 from PIL import Image
 
+
 # Connect to the database
 conn = sqlite3.connect('data.db', check_same_thread=False)
 # Create a cursor object
@@ -93,9 +94,10 @@ leftcount = 0
 rightcount = 0
 obsFrames = 0
 
+
 def main():
 
-    global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames, is_Left, is_Right
+    global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames
 
     interpreter, labels =cm.load_model(MODEL_NAME,PATH_TO_CKPT,PATH_TO_LABELS)
 
@@ -178,6 +180,7 @@ def main():
 
             #update the centroid for the objects
             objects = ct.update(rects)
+            # current_count = len(rects)
             # calculate the difference between this and the previous frame
             x = DictDiff(objects,old_objects)
 	        # loop over the tracked objects
@@ -191,12 +194,12 @@ def main():
 
                 cv2.putText(frame1, textID, (centroid[0] - 2, centroid[1] - 2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 cv2.circle(frame1, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
-
+        
         # Draw framerate in corner of frame
         # cv2_im = cv2.putText(frame1,'FPS: {0:.2f}'.format(frame_rate_calc),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1,'Right: {0}'.format(rightcount),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
-
+        cv2_im = cv2.putText(frame1,'Detected: {0}'.format(len(objects)),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1, '{0} - {1}'.format(datetime.now().date(), datetime.now().strftime("%H:%M:%S")),(200,470),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
         # Calculate framerate
@@ -241,7 +244,7 @@ def main():
         # Resize the video to the size of the screen
         resized_video = cv2.resize(cv2_im, (900, 480))
         # Set the window's property to full screen
-        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         # All the results have been drawn on the frame, so it's time to display it.
         cv2.imshow(window_name, cv2_im)
         
