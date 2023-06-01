@@ -3,7 +3,7 @@ from tflite_runtime.interpreter import Interpreter
 import os
 import cv2
 import numpy as np
-import time
+# import time
 from datetime import datetime
 from centroidtracker import CentroidTracker
 from flask import Flask, render_template, Response
@@ -57,11 +57,10 @@ def DictDiff(dict1, dict2):
                dict3[key] = np.subtract(dict2[key], dict1[key])
    return dict3
 
-
 MODEL_NAME = "all_models/"
 GRAPH_NAME = "mobilenet_ssd_v2_coco_quant_postprocess.tflite"
 LABELMAP_NAME = "coco_labels.txt"
-min_conf_threshold = 0.5
+min_conf_threshold = 0.4
 imW, imH = 800, 480
 
 # Get path to current working directory
@@ -74,36 +73,37 @@ PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
 PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
 
-cap = cv2.VideoCapture("testing/output_v5.mp4")
-# cap = cv2.VideoCapture("testing/output3.mp4")
-# cap = cv2.VideoCapture("testing/recording_test_2.mp4")
-# cap = cv2.VideoCapture(0)
-# initialize our centroid tracker and frame dimensions
-ct = CentroidTracker()
-objects ={}
-old_objects={}
-curr_ID = 0
-captured_image = np.array([])
-is_captured = False
-
-# Newly added co-ord stuff
-leftcount = 0
-rightcount = 0
-obsFrames = 0
-skipFrames1 = 35  # for output_v3.mp4 and set pixels to 6
-skipFrames2 = 50  # for output3.mp4  and set pixels to 3
-
 def main():
 
-    global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames, skipFrames1, skipFrames2
+    # global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames, skipFrames1, skipFrames2
+    #global conn
 
-    interpreter, labels =cm.load_model(MODEL_NAME,PATH_TO_CKPT,PATH_TO_LABELS)
 
-    roi_pos1 = 0.2
-    roi_pos2 = 0.25
+    # cap = cv2.VideoCapture("testing/output_v3.mp4")
+    #cap = cv2.VideoCapture("testing/output3.mp4")
+    cap = cv2.VideoCapture("testing/recording_test_1.mp4")
+    # cap = cv2.VideoCapture(0)
+    # initialize our centroid tracker and frame dimensions
+    ct = CentroidTracker()
+    objects ={}
+    old_objects={}
+    curr_ID = 0
+    captured_image = np.array([])
+    is_captured = False
+
+    # Newly added co-ord stuff
+    leftcount = 0
+    rightcount = 0
+    obsFrames = 0
+    
+    roi_pos_to_left = 0.1
+    roi_pos_to_right = 0.9
 
     is_Left = False
     is_Right = False
+    
+    interpreter, labels =cm.load_model(MODEL_NAME,PATH_TO_CKPT,PATH_TO_LABELS)
+
 
     # Get model details
     input_details = interpreter.get_input_details()
@@ -191,11 +191,11 @@ def main():
 	        # loop over the tracked objects
             for (objectID, centroid) in objects.items():
 
-                if is_Left and centroid[0] < roi_pos1*imW:
+                if is_Left and centroid[0] < roi_pos_to_left*imW:
                         leftcount += 1
                         is_Left = False
 
-                if is_Right and centroid[0] > roi_pos1*imW and centroid[0] < roi_pos2*imW:
+                if is_Right and centroid[0] > roi_pos_to_right*imW:
                         rightcount += 1
                         is_Right = False
 		        # draw both the ID of the object and the centroid of the
@@ -207,9 +207,9 @@ def main():
                 cv2.putText(frame1, textID, (centroid[0] - 2, centroid[1] - 2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 cv2.circle(frame1, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
 
-        cv2_im = cv2.putText(frame1,'Right: {0}'.format(rightcount),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
-        cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(140,110,150),2,cv2.LINE_AA)
-        cv2_im = cv2.putText(frame1,'Detected: {0}'.format(len(objects)),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(170,110,150),2,cv2.LINE_AA)
+        cv2_im = cv2.putText(frame1,'Right: {0}'.format(rightcount),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(220,110,150),2,cv2.LINE_AA)
+        cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(220,110,150),2,cv2.LINE_AA)
+        cv2_im = cv2.putText(frame1,'Detected: {0}'.format(len(objects)),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(200,110,140),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1, '{0} - {1}'.format(datetime.now().date(), datetime.now().strftime("%H:%M:%S")),(200,470),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
         # Calculate framerate
@@ -221,35 +221,24 @@ def main():
         
         #see what the difference in centroids is after every x frames to determine direction of movement
         #and tally up total number of objects that travelled left or right
-        if obsFrames % 40 == 0:
-            d = {}
+        if obsFrames % 24 == 0:  # obs = 18 and diff = 10 is good enough
+            # d = {}
             for k,v in x.items():
                 if v[0] > 3: 
-                    d[k] =  "Left"
+                    # d[k] =  "Left"
                     # leftcount = leftcount + 1
                     is_Left = True
                     is_captured = True
                 elif v[0] < -3:
-                    d[k] =  "Right"
+                    # d[k] =  "Right"
                     # rightcount = rightcount + 1
                     is_captured = True
                     is_Right = True
-                else: 
-                    d[k] = "Stationary"
-                    is_captured = True
-            if bool(d):
-                print(d, time.ctime()) # prints the direction of travel (if any) and timestamp
-                # cur.execute("INSERT OR IGNORE INTO data_table (ID, Date, Time, Person) VALUES (?, ?, ?, ?)", (curr_ID, datetime.now().date(), datetime.now().strftime("%H:%M:%S"), saved_image_path))
-                # conn.commit()
-       
-        # if is_Left == True:
-        #     leftcount = leftcount + 1
-        #     is_Left = False
-        #
-        # if is_Right == True:
-        #     rightcount = rightcount + 1
-        #     is_Right = False
-        # Get the size of the screen
+                # else: 
+                #     d[k] = "Stationary"
+                #     is_captured = True
+            # if bool(d):
+            #     print(d, time.ctime()) # prints the direction of travel (if any) and timestamp
 
         # Resize the video to the size of the screen
         # resized_video = cv2.resize(cv2_im, (800, 480))
