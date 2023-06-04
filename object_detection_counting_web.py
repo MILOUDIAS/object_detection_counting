@@ -60,7 +60,8 @@ def DictDiff(dict1, dict2):
 MODEL_NAME = "all_models/"
 GRAPH_NAME = "mobilenet_ssd_v2_coco_quant_postprocess.tflite"
 LABELMAP_NAME = "coco_labels.txt"
-min_conf_threshold = 0.4
+min_conf_threshold = 0.7
+# min_conf_threshold = 0.4
 imW, imH = 800, 480
 
 # Get path to current working directory
@@ -75,13 +76,12 @@ PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
 def main():
 
-    # global labels, ct, objects, old_objects, curr_ID, captured_image, is_captured, conn, leftcount, rightcount, obsFrames, skipFrames1, skipFrames2
-    #global conn
-
-
-    # cap = cv2.VideoCapture("testing/output_v3.mp4")
-    #cap = cv2.VideoCapture("testing/output3.mp4")
-    cap = cv2.VideoCapture("testing/recording_test_1.mp4")
+    cap = cv2.VideoCapture("testing/output_v3.mp4")
+    # cap = cv2.VideoCapture("testing/output3.mp4")
+    # cap = cv2.VideoCapture("testing/recording_test_1.mp4")
+    # Define the codec and create VideoWriter object
+    # fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    # out = cv2.VideoWriter('output_2.avi', fourcc, 10.0, (imW,  imH))
     # cap = cv2.VideoCapture(0)
     # initialize our centroid tracker and frame dimensions
     ct = CentroidTracker()
@@ -96,9 +96,13 @@ def main():
     rightcount = 0
     obsFrames = 0
     
-    roi_pos_to_left = 0.1
-    roi_pos_to_right = 0.9
+    # roi_pos_to_left = 0.25
+    # roi_pos_to_right = 0.65
 
+    # roi_pos_to_left = 0.1
+    # roi_pos_to_right = 0.9
+    roi_pos_to_left = 0.45
+    roi_pos_to_right = 0.8
     is_Left = False
     is_Right = False
     
@@ -128,6 +132,7 @@ def main():
         _, frame1 = cap.read()
 
         cv2_im = frame1
+        # cv2_im = cv.flip(cv2_im, 0)
 
         cv2_im_rgb = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         pil_im = Image.fromarray(cv2_im_rgb)
@@ -194,10 +199,12 @@ def main():
                 if is_Left and centroid[0] < roi_pos_to_left*imW:
                         leftcount += 1
                         is_Left = False
+                        # is_captured = True
 
                 if is_Right and centroid[0] > roi_pos_to_right*imW:
                         rightcount += 1
                         is_Right = False
+                        # is_captured = True
 		        # draw both the ID of the object and the centroid of the
 		        # object on the output frame
                 textID = "ID {}".format(objectID)
@@ -207,9 +214,9 @@ def main():
                 cv2.putText(frame1, textID, (centroid[0] - 2, centroid[1] - 2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 cv2.circle(frame1, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
 
-        cv2_im = cv2.putText(frame1,'Right: {0}'.format(rightcount),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(220,110,150),2,cv2.LINE_AA)
-        cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(220,110,150),2,cv2.LINE_AA)
-        cv2_im = cv2.putText(frame1,'Detected: {0}'.format(len(objects)),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(200,110,140),2,cv2.LINE_AA)
+        cv2_im = cv2.putText(frame1,'Right: {0}'.format(rightcount),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(250,80,80),2,cv2.LINE_AA)
+        cv2_im = cv2.putText(frame1,'Left: {0}'.format(leftcount),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(250,80,80),2,cv2.LINE_AA)
+        cv2_im = cv2.putText(frame1,'Detected: {0}'.format(len(objects)),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(250,110,100),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1, '{0} - {1}'.format(datetime.now().date(), datetime.now().strftime("%H:%M:%S")),(200,470),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
         # Calculate framerate
@@ -222,25 +229,16 @@ def main():
         #see what the difference in centroids is after every x frames to determine direction of movement
         #and tally up total number of objects that travelled left or right
         if obsFrames % 24 == 0:  # obs = 18 and diff = 10 is good enough
-            # d = {}
+        # if obsFrames % 30 == 0:  # obs = 18 and diff = 10 is good enough
+
             for k,v in x.items():
                 if v[0] > 3: 
-                    # d[k] =  "Left"
-                    # leftcount = leftcount + 1
                     is_Left = True
                     is_captured = True
                 elif v[0] < -3:
-                    # d[k] =  "Right"
-                    # rightcount = rightcount + 1
-                    is_captured = True
                     is_Right = True
-                # else: 
-                #     d[k] = "Stationary"
-                #     is_captured = True
-            # if bool(d):
-            #     print(d, time.ctime()) # prints the direction of travel (if any) and timestamp
-
-        # Resize the video to the size of the screen
+                    is_captured = True        
+# Resize the video to the size of the screen
         # resized_video = cv2.resize(cv2_im, (800, 480))
         # Set the window's property to full screen
         # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
@@ -250,7 +248,8 @@ def main():
         # Press 'q' to quit and give the total tally
         if cv2.waitKey(1) == ord('q'):
             break
-
+        # write the flipped frame
+        # out.write(cv2_im)
         ret, jpeg = cv2.imencode('.jpg', cv2_im)
         pic = jpeg.tobytes()
 
