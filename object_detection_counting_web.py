@@ -35,7 +35,6 @@ def get_db():
 def index():
     conn2 = get_db()
     cur2 = conn2.cursor()
-    # cur2.execute('BEGIN')
     cur2.execute('SELECT * FROM data_table')
 
     rows = cur2.fetchall()
@@ -45,7 +44,6 @@ def index():
 
 @app.route('/video_feed')
 def video_feed():
-    #global cap
     return Response(main(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -76,12 +74,7 @@ PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
 def main():
 
-    cap = cv2.VideoCapture("testing/output_v3.mp4")
-    # cap = cv2.VideoCapture("testing/output3.mp4")
-    # cap = cv2.VideoCapture("testing/recording_test_1.mp4")
-    # Define the codec and create VideoWriter object
-    # fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    # out = cv2.VideoWriter('output_2.avi', fourcc, 10.0, (imW,  imH))
+    cap = cv2.VideoCapture("testing/recording_test_1.mp4")
     # cap = cv2.VideoCapture(0)
     # initialize our centroid tracker and frame dimensions
     ct = CentroidTracker()
@@ -96,12 +89,7 @@ def main():
     rightcount = 0
     obsFrames = 0
     
-    # roi_pos_to_left = 0.25
-    # roi_pos_to_right = 0.65
-
-    # roi_pos_to_left = 0.1
-    # roi_pos_to_right = 0.9
-    roi_pos_to_left = 0.45
+    roi_pos_to_left = 0.2
     roi_pos_to_right = 0.8
     is_Left = False
     is_Right = False
@@ -116,12 +104,8 @@ def main():
 
     # Create a new window
     window_name = "Person Detector"
-    # cv2.namedWindow(window_name)
+    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
 
-    # Set the window's property to full screen
-    # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-
-    captured_image = False
 
     while True:
    
@@ -132,7 +116,6 @@ def main():
         _, frame1 = cap.read()
 
         cv2_im = frame1
-        # cv2_im = cv.flip(cv2_im, 0)
 
         cv2_im_rgb = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         pil_im = Image.fromarray(cv2_im_rgb)
@@ -199,12 +182,10 @@ def main():
                 if is_Left and centroid[0] < roi_pos_to_left*imW:
                         leftcount += 1
                         is_Left = False
-                        # is_captured = True
 
                 if is_Right and centroid[0] > roi_pos_to_right*imW:
                         rightcount += 1
                         is_Right = False
-                        # is_captured = True
 		        # draw both the ID of the object and the centroid of the
 		        # object on the output frame
                 textID = "ID {}".format(objectID)
@@ -219,17 +200,12 @@ def main():
         cv2_im = cv2.putText(frame1,'Detected: {0}'.format(len(objects)),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(250,110,100),2,cv2.LINE_AA)
         cv2_im = cv2.putText(frame1, '{0} - {1}'.format(datetime.now().date(), datetime.now().strftime("%H:%M:%S")),(200,470),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
-        # Calculate framerate
-        # t2 = cv2.getTickCount()
-        # time1 = (t2-t1)/freq
-        # frame_rate_calc= 1/time1
         #count number of frames for direction calculation
         obsFrames = obsFrames + 1
         
         #see what the difference in centroids is after every x frames to determine direction of movement
         #and tally up total number of objects that travelled left or right
         if obsFrames % 24 == 0:  # obs = 18 and diff = 10 is good enough
-        # if obsFrames % 30 == 0:  # obs = 18 and diff = 10 is good enough
 
             for k,v in x.items():
                 if v[0] > 3: 
@@ -238,18 +214,14 @@ def main():
                 elif v[0] < -3:
                     is_Right = True
                     is_captured = True        
-# Resize the video to the size of the screen
-        # resized_video = cv2.resize(cv2_im, (800, 480))
         # Set the window's property to full screen
-        # cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         # All the results have been drawn on the frame, so it's time to display it.
-        # cv2.imshow(window_name, cv2_im)
+        cv2.imshow(window_name, cv2_im)
         
         # Press 'q' to quit and give the total tally
         if cv2.waitKey(1) == ord('q'):
             break
-        # write the flipped frame
-        # out.write(cv2_im)
         ret, jpeg = cv2.imencode('.jpg', cv2_im)
         pic = jpeg.tobytes()
 
