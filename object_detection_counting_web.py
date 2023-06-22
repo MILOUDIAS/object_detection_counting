@@ -58,8 +58,7 @@ def DictDiff(dict1, dict2):
 MODEL_NAME = "all_models/"
 GRAPH_NAME = "mobilenet_ssd_v2_coco_quant_postprocess.tflite"
 LABELMAP_NAME = "coco_labels.txt"
-min_conf_threshold = 0.7
-# min_conf_threshold = 0.4
+min_conf_threshold = 0.5
 imW, imH = 800, 480
 
 # Get path to current working directory
@@ -74,8 +73,8 @@ PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
 def main():
 
-    cap = cv2.VideoCapture("testing/recording_test_1.mp4")
-    # cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture("testing/recording_test_1.mp4")
     # initialize our centroid tracker and frame dimensions
     ct = CentroidTracker()
     objects ={}
