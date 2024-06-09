@@ -5,7 +5,7 @@ __pycache__/
 
 #extensions of any program
 *.so
-*.png
+# *.png
 *.db
 *.rtf
 # Distribution / packaging
